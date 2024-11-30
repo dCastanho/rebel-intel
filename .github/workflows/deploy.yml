@@ -1,40 +1,55 @@
-name: Deploy to GitHub Pages
+name: Deploy/Build site to Pages
 
 on:
   push:
-    branches:
-      - master # Change this to the branch you use for development if it's not "main"
+    branches: [master]
+
   workflow_dispatch:
 
+# Sets permissions of the GITHUB_TOKEN to allow deployment to GitHub Pages
 permissions:
   contents: read
   pages: write
   id-token: write
 
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
 jobs:
-  build-and-deploy:
+  # Build job
+  build:
     runs-on: ubuntu-latest
-
     steps:
-      # Checkout the repository
-      - name: Checkout code
-        uses: actions/checkout@v3
-
-      # Set up Node.js environment
-      - name: Set up Node.js
-        uses: actions/setup-node@v3
+      - name: Checkout
+        uses: actions/checkout@v4
         with:
-          node-version: 18 # Use the Node.js version your project requires
+          fetch-depth: 0 
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm 
+      - name: Setup Pages
+        uses: actions/configure-pages@v4
+      - name: Install dependencies
+        run: npm ci 
+      - name: Build with VitePress
+        run: npm run build
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: ./dist/
 
-      # Install dependencies and build the Svelte project
-      - name: Install dependencies and build
-        run: |
-          npm install
-          npm run build
-
-      # Deploy to GitHub Pages
+  # Deployment job
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    needs: build
+    runs-on: ubuntu-latest
+    name: Deploy
+    steps:
       - name: Deploy to GitHub Pages
-        uses: peaceiris/actions-gh-pages@v3
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./dist # Replace with your build directory, e.g., "build" or "public"
+        id: deployment
+        uses: actions/deploy-pages@v4
