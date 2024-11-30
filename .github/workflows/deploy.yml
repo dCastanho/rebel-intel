@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - master # Change this to the branch you use for development if it's not "main"
+  workflow_dispatch:
 
 permissions:
   contents: read
