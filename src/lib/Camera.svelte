@@ -16,7 +16,11 @@
 	export async function startCamera() {
 		try {
 			const stream = await navigator.mediaDevices.getUserMedia({
-				video:  { facingMode: { exact: "environment" } },
+				video: {
+					width: { ideal: 1920 }, // Request a width of 1920 pixels (Full HD)
+					height: { ideal: 1080 }, // Request a height of 1080 pixels (Full HD)
+					facingMode: { exact: "environment" },
+				},
 			});
 			video.srcObject = stream;
 			cameraState.isActive = true;
@@ -41,45 +45,50 @@
 		const canvas = document.createElement("canvas");
 		const context = canvas.getContext("2d");
 
+		const videoWidth = video.videoWidth;
+		const videoHeight = video.videoHeight;
 
-      const videoWidth = video.videoWidth;
-      const videoHeight = video.videoHeight;
+		const videoContainerRect = videoContainer.getBoundingClientRect();
+		const scaleX = videoWidth / videoContainerRect.width;
+		const scaleY = videoHeight / videoContainerRect.height;
 
-      const videoContainerRect = videoContainer.getBoundingClientRect();
-      const scaleX = videoWidth / videoContainerRect.width;
-      const scaleY = videoHeight / videoContainerRect.height;
+		const highlightRect = highlight.getBoundingClientRect();
+		const sectionX =
+			(highlightRect.left - videoContainerRect.left) * scaleX;
+		const sectionY = (highlightRect.top - videoContainerRect.top) * scaleY;
+		const sectionWidth = highlightRect.width * scaleX;
+		const sectionHeight = highlightRect.height * scaleY;
 
-      const highlightRect = highlight.getBoundingClientRect();
-      const sectionX = (highlightRect.left - videoContainerRect.left) * scaleX;
-      const sectionY = (highlightRect.top - videoContainerRect.top) * scaleY;
-      const sectionWidth = highlightRect.width * scaleX;
-      const sectionHeight = highlightRect.height * scaleY;
+		canvas.width = sectionWidth;
+		canvas.height = sectionHeight;
 
-      canvas.width = sectionWidth;
-      canvas.height = sectionHeight;
-
-      // Draw the highlighted section from the video onto the canvas
-      context.drawImage(
-        video,
-        sectionX,
-        sectionY,
-        sectionWidth,
-        sectionHeight,
-        0,
-        0,
-        canvas.width,
-        canvas.height
-      );
+		// Draw the highlighted section from the video onto the canvas
+		context.drawImage(
+			video,
+			sectionX,
+			sectionY,
+			sectionWidth,
+			sectionHeight,
+			0,
+			0,
+			canvas.width,
+			canvas.height,
+		);
 
 		image = canvas.toDataURL("image/png");
-		const text = await recognize(image)
-		const lines = text.split("\n").map(s => keepOnlyCapsAndNumbers(s).trim()).filter(s => s)
-		console.log(lines)
-		const options = (await Promise.all(lines.map( async l => await getCards(l, cameraState.filter)))).flat()
-		console.log(options)
-		cameraState.currentListOfOptions = options
-
-
+		const text = await recognize(image);
+		const lines = text
+			.split("\n")
+			.map((s) => keepOnlyCapsAndNumbers(s).trim())
+			.filter((s) => s);
+		console.log(lines);
+		const options = (
+			await Promise.all(
+				lines.map(async (l) => await getCards(l, cameraState.filter)),
+			)
+		).flat();
+		console.log(options);
+		cameraState.currentListOfOptions = options;
 	}
 </script>
 
