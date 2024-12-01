@@ -4,7 +4,6 @@ export async function recognize(dataURL: string) {
 	const worker = await createWorker('eng');
 	const ret = await worker.recognize(dataURL);
 	worker.terminate();
-	return "DEATH TROOPER"
 	return ret.data.text;
 	;
 }
