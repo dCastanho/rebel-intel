@@ -17,8 +17,8 @@
 		try {
 			const stream = await navigator.mediaDevices.getUserMedia({
 				video: {
-					width: { ideal: 1920 }, // Request a width of 1920 pixels (Full HD)
-					height: { ideal: 1080 }, // Request a height of 1080 pixels (Full HD)
+					width: { ideal: 999999 }, // Request a width of 1920 pixels (Full HD)
+					height: { ideal: 999999 }, // Request a height of 1080 pixels (Full HD)
 					facingMode: { exact: "environment" },
 				},
 			});
@@ -106,7 +106,7 @@
 	></video>
 	<div
 		bind:this={highlight}
-		class="absolute -translate-x-1/2 -translate-y-1/2 w-44 h-12 border-2 border-teal-800 left-1/2 top-1/4 rounded-md z-10"
+		class="absolute -translate-x-1/2 -translate-y-1/2 w-56 h-8 border-2 border-teal-800 left-1/2 top-1/4 rounded-md z-10"
 	></div>
 	<button
 		class="absolute top-8 right-8 bg-red-400 p-1 rounded-md"
