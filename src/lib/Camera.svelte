@@ -75,19 +75,24 @@
 			canvas.height,
 		);
 
+		const startTime = performance.now()
 		image = canvas.toDataURL("image/png");
 		const text = await recognize(image);
 		const lines = text
 			.split("\n")
 			.map((s) => keepOnlyCapsAndNumbers(s).trim())
 			.filter((s) => s);
-		console.log(lines);
+		const ocrTime = performance.now()
+		cameraState.profiler.results = lines
+		cameraState.profiler.ocr = startTime - ocrTime
 		const options = (
 			await Promise.all(
 				lines.map(async (l) => await getCards(l, cameraState.filter)),
 			)
 		).flat();
 		console.log(options);
+		const apiTime = performance.now()
+		cameraState.profiler.ocr =  ocrTime - apiTime
 		cameraState.currentListOfOptions = options;
 	}
 </script>
