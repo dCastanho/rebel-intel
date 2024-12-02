@@ -19,7 +19,6 @@
 				video: {
 					width: { ideal: 999999 }, // Request a width of 1920 pixels (Full HD)
 					height: { ideal: 999999 }, // Request a height of 1080 pixels (Full HD)
-					facingMode: { exact: "environment" },
 				},
 			});
 			video.srcObject = stream;
