@@ -1,4 +1,10 @@
 import { createWorker } from 'tesseract.js';
+import Fuse from 'fuse.js'
+import cards from './database.json'
+
+// Create the Fuse index
+const cardIndex = Fuse.createIndex([], cards)
+const fuse = new Fuse(cards, {keys: [] }, cardIndex)
 
 export async function recognize(dataURL: string) {
 	const worker = await createWorker('eng');
@@ -11,7 +17,8 @@ export async function recognize(dataURL: string) {
 
 export async function getCards(title: string, filter: string) {
 
-	return fetch(`https://admin.starwarsunlimited.com/api/card-list?locale=en&filters\[$and\]\[1\]\[$or\]\[0\]\[title\]\[$containsi\]=${encodeURI(title)}&pagination\[page\]=1&pagination\[pageSize\]=50`)
+	const indexedTitle = fuse.search(title)[0].item
+	return fetch(`https://admin.starwarsunlimited.com/api/card-list?locale=en&filters\[$and\]\[1\]\[$or\]\[0\]\[title\]\[$containsi\]=${encodeURI(indexedTitle)}&pagination\[page\]=1&pagination\[pageSize\]=50`)
 		.then(r => r.json())
 		.then(r => r.data)
 		.then(d => {
