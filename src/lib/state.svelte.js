@@ -4,6 +4,7 @@ export let cameraState = $state( {
 	exported : {},
 	filter: 'All',
 	profiler: {
+		indexed_result: [],
 		results: [],
 		ocr: 0,
 		query: 0,

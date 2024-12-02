@@ -22,6 +22,7 @@
       class={`h-full items-center grow flex flex-col ${ Object.entries(cameraState.exported).length == 0 || cameraState.isActive ? "justify-center" : "justify-start p-2"}`}
     >
       {cameraState.profiler.results} <br>
+      {cameraState.profiler.indexed_result} <br>
       {cameraState.profiler.ocr} <br>
       {cameraState.profiler.query} <br>
       <Camera bind:this={camera} />

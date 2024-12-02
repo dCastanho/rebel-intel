@@ -1,6 +1,7 @@
 import { createWorker } from 'tesseract.js';
 import Fuse from 'fuse.js'
 import cards from './database.json'
+import { cameraState } from '../lib/state.svelte';
 
 // Create the Fuse index
 const cardIndex = Fuse.createIndex([], cards)
@@ -18,6 +19,7 @@ export async function recognize(dataURL: string) {
 export async function getCards(title: string, filter: string) {
 
 	const indexedTitle = fuse.search(title)[0].item
+	cameraState.profiler.indexed_result.push(indexedTitle)
 	return fetch(`https://admin.starwarsunlimited.com/api/card-list?locale=en&filters\[$and\]\[1\]\[$or\]\[0\]\[title\]\[$containsi\]=${encodeURI(indexedTitle)}&pagination\[page\]=1&pagination\[pageSize\]=50`)
 		.then(r => r.json())
 		.then(r => r.data)
