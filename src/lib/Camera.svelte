@@ -84,7 +84,7 @@
 			.filter((s) => s);
 		const ocrTime = performance.now()
 		cameraState.profiler.results = lines
-		cameraState.profiler.ocr = startTime - ocrTime
+		cameraState.profiler.ocr = ocrTime - startTime
 		const options = (
 			await Promise.all(
 				lines.map(async (l) => await getCards(l, cameraState.filter)),
@@ -92,7 +92,7 @@
 		).flat();
 		console.log(options);
 		const apiTime = performance.now()
-		cameraState.profiler.ocr =  ocrTime - apiTime
+		cameraState.profiler.query =  apiTime - ocrTime
 		cameraState.currentListOfOptions = options;
 	}
 </script>
