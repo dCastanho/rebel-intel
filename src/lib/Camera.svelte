@@ -97,24 +97,18 @@
 		// );
 		//context.drawImage(video, 0, 0, canvas.width, canvas.height);
 
-		const startTime = performance.now();
 		image = canvas.toDataURL("image/png");
 		const text = await recognize(image);
 		const lines = text
 			.split("\n")
 			.map((s) => gibberish(keepOnlyCapsAndNumbers(s).trim()))
-			.filter((s) => s);
-		const ocrTime = performance.now();
-		cameraState.profiler.results = lines;
-		cameraState.profiler.ocr = ocrTime - startTime;
+			.filter((s) => s);		
 		const options = (
 			await Promise.all(
 				lines.map(async (l) => await getCards(l, cameraState.filter)),
 			)
 		).flat();
 		console.log(options);
-		const apiTime = performance.now();
-		cameraState.profilers.query = apiTime - ocrTime;
 		cameraState.currentListOfOptions = options;
 	}
 </script>

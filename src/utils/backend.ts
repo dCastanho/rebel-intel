@@ -31,7 +31,7 @@ export async function getCards(title: string, filter: string) {
 	const indexedTitle = fuse.search(title)[0].item
 	console.log(title, fuse.search(title)[0])
 	cameraState.profiler.indexed_result.push(indexedTitle)
-	return fetch(`https://admin.starwarsunlimited.com/api/card-list?locale=en&filters\[$and\]\[1\]\[$or\]\[0\]\[title\]\[$containsi\]=${encodeURI(indexedTitle)}&pagination\[page\]=1&pagination\[pageSize\]=50`)
+	return fetch(`https://admin.starwarsunlimited.com/api/card-list?locale=en&filters\[$and\]\[1\]\[$or\]\[0\]\[title\]\[$contains\]=${encodeURI(indexedTitle)}&pagination\[page\]=1&pagination\[pageSize\]=50`)
 		.then(r => r.json())
 		.then(r => r.data)
 		.then(d => {
