@@ -1,6 +1,7 @@
 <script>
 	import {
 		getCards,
+		gibberish,
 		keepOnlyCapsAndNumbers,
 		recognize,
 	} from "../utils/backend";
@@ -43,56 +44,71 @@
 
 	export async function capture() {
 		const canvas = document.createElement("canvas");
+		//const canvas = document.getElementById("canvas-teste");
 		const context = canvas.getContext("2d");
 
 		const videoWidth = video.videoWidth;
 		const videoHeight = video.videoHeight;
 
-		const videoContainerRect = videoContainer.getBoundingClientRect();
-		const scaleX = videoWidth / videoContainerRect.width;
-		const scaleY = videoHeight / videoContainerRect.height;
+		//! Highlight
+		// const videoContainerRect = videoContainer.getBoundingClientRect();
+		// const scaleX = videoWidth / videoContainerRect.width;
+		// const scaleY = videoHeight / videoContainerRect.height;
+		// const highlightRect = highlight.getBoundingClientRect();
+		// const sectionX =
+		// 	(highlightRect.left - videoContainerRect.left) * scaleX;
+		// const sectionY = (highlightRect.top - videoContainerRect.top) * scaleY;
+		// const sectionWidth = highlightRect.width * scaleX;
+		// const sectionHeight = highlightRect.height * scaleY;
 
-		const highlightRect = highlight.getBoundingClientRect();
-		const sectionX =
-			(highlightRect.left - videoContainerRect.left) * scaleX;
-		const sectionY = (highlightRect.top - videoContainerRect.top) * scaleY;
-		const sectionWidth = highlightRect.width * scaleX;
-		const sectionHeight = highlightRect.height * scaleY;
+		const sourceX = 0;
+		const sourceY = 0; // Start at the top
+		const sourceWidth = videoWidth;
+		const sourceHeight = videoHeight; // Only the top half
 
-		canvas.width = sectionWidth;
-		canvas.height = sectionHeight;
+		// Adjust the canvas size to match the source dimensions
+		canvas.width = sourceWidth;
+		canvas.height = sourceHeight;
+
+		// Draw the top half of the video frame onto the canvas at native resolution
+		// context.drawImage(
+		// video,
+		// sourceX, sourceY, sourceWidth, sourceHeight, // Source rectangle
+		// 0, 0, sourceWidth, sourceHeight // Destination rectangle matches source
+		// );
 
 		// Draw the highlighted section from the video onto the canvas
-		context.drawImage(
-			video,
-			sectionX,
-			sectionY,
-			sectionWidth,
-			sectionHeight,
-			0,
-			0,
-			canvas.width,
-			canvas.height,
-		);
+		// context.drawImage(
+		// 	video,
+		// 	sectionX,
+		// 	sectionY,
+		// 	sectionWidth,
+		// 	sectionHeight,
+		// 	0,
+		// 	0,
+		// 	canvas.width,
+		// 	canvas.height,
+		// );
+		context.drawImage(video, 0, 0, canvas.width, canvas.height);
 
-		const startTime = performance.now()
+		const startTime = performance.now();
 		image = canvas.toDataURL("image/png");
 		const text = await recognize(image);
 		const lines = text
 			.split("\n")
-			.map((s) => keepOnlyCapsAndNumbers(s).trim())
+			.map((s) => gibberish(keepOnlyCapsAndNumbers(s).trim()))
 			.filter((s) => s);
-		const ocrTime = performance.now()
-		cameraState.profiler.results = lines
-		cameraState.profiler.ocr = ocrTime - startTime
+		const ocrTime = performance.now();
+		cameraState.profiler.results = lines;
+		cameraState.profiler.ocr = ocrTime - startTime;
 		const options = (
 			await Promise.all(
 				lines.map(async (l) => await getCards(l, cameraState.filter)),
 			)
 		).flat();
 		console.log(options);
-		const apiTime = performance.now()
-		cameraState.profiler.query =  apiTime - ocrTime
+		const apiTime = performance.now();
+		cameraState.profiler.query = apiTime - ocrTime;
 		cameraState.currentListOfOptions = options;
 	}
 </script>
@@ -111,7 +127,7 @@
 	></video>
 	<div
 		bind:this={highlight}
-		class="absolute -translate-x-1/2 -translate-y-1/2 w-56 h-8 border-2 border-teal-800 left-1/2 top-1/4 rounded-md z-10"
+		class="hidden absolute -translate-x-1/2 -translate-y-1/2 w-56 h-8 border-2 border-teal-800 left-1/2 top-1/4 rounded-md z-10"
 	></div>
 	<button
 		class="absolute top-8 right-8 bg-red-400 p-1 rounded-md"
@@ -126,4 +142,5 @@
 	>
 		Scan
 	</button>
+	<img src={image} />
 </div>

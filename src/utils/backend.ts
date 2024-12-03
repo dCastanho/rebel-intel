@@ -5,7 +5,7 @@ import { cameraState } from '../lib/state.svelte';
 
 // Create the Fuse index
 const cardIndex = Fuse.createIndex([], cards)
-const fuse = new Fuse(cards, {keys: [] }, cardIndex)
+const fuse = new Fuse(cards, {keys: [], threshold:0.9, includeScore:true}, cardIndex)
 
 export async function recognize(dataURL: string) {
 	const worker = await createWorker('eng');
@@ -15,10 +15,21 @@ export async function recognize(dataURL: string) {
 	;
 }
 
+export function gibberish(title : string ) {
+	const cleanedUp = title.replaceAll("\s", " ")
+		 	.trim()
+	const allSmall = cleanedUp.split(' ').every( s => s.length <= 2)
+	if(allSmall)
+		return null
+	else 
+		return cleanedUp
+}
+
 
 export async function getCards(title: string, filter: string) {
 
 	const indexedTitle = fuse.search(title)[0].item
+	console.log(title, fuse.search(title)[0])
 	cameraState.profiler.indexed_result.push(indexedTitle)
 	return fetch(`https://admin.starwarsunlimited.com/api/card-list?locale=en&filters\[$and\]\[1\]\[$or\]\[0\]\[title\]\[$containsi\]=${encodeURI(indexedTitle)}&pagination\[page\]=1&pagination\[pageSize\]=50`)
 		.then(r => r.json())
