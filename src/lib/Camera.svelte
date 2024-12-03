@@ -64,18 +64,24 @@
 		const sourceX = 0;
 		const sourceY = 0; // Start at the top
 		const sourceWidth = videoWidth;
-		const sourceHeight = videoHeight; // Only the top half
+		const sourceHeight = videoHeight / 3; // Only the top half
 
 		// Adjust the canvas size to match the source dimensions
 		canvas.width = sourceWidth;
 		canvas.height = sourceHeight;
 
 		// Draw the top half of the video frame onto the canvas at native resolution
-		// context.drawImage(
-		// video,
-		// sourceX, sourceY, sourceWidth, sourceHeight, // Source rectangle
-		// 0, 0, sourceWidth, sourceHeight // Destination rectangle matches source
-		// );
+		context.drawImage(
+			video,
+			sourceX,
+			sourceY,
+			sourceWidth,
+			sourceHeight, // Source rectangle
+			0,
+			0,
+			sourceWidth,
+			sourceHeight, // Destination rectangle matches source
+		);
 
 		// Draw the highlighted section from the video onto the canvas
 		// context.drawImage(
@@ -89,7 +95,7 @@
 		// 	canvas.width,
 		// 	canvas.height,
 		// );
-		context.drawImage(video, 0, 0, canvas.width, canvas.height);
+		//context.drawImage(video, 0, 0, canvas.width, canvas.height);
 
 		const startTime = performance.now();
 		image = canvas.toDataURL("image/png");
@@ -108,7 +114,7 @@
 		).flat();
 		console.log(options);
 		const apiTime = performance.now();
-		cameraState.profiler.query = apiTime - ocrTime;
+		cameraState.profilers.query = apiTime - ocrTime;
 		cameraState.currentListOfOptions = options;
 	}
 </script>
@@ -127,7 +133,7 @@
 	></video>
 	<div
 		bind:this={highlight}
-		class="hidden absolute -translate-x-1/2 -translate-y-1/2 w-56 h-8 border-2 border-teal-800 left-1/2 top-1/4 rounded-md z-10"
+		class="absolute -translate-x-1/2 -translate-y-1/2 w-56 h-8 border-2 border-teal-800 left-1/2 top-1/4 rounded-md z-10"
 	></div>
 	<button
 		class="absolute top-8 right-8 bg-red-400 p-1 rounded-md"
