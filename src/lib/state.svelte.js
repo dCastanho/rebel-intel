@@ -1,6 +1,7 @@
 export let cameraState = $state( {
 	isActive : false,
 	currentListOfOptions : [],
+	error: undefined, 
 	exported : {},
 	filter: 'All',
 	profiler: {

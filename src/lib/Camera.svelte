@@ -43,6 +43,7 @@
 	}
 
 	export async function capture() {
+		cameraState.error = undefined
 		const canvas = document.createElement("canvas");
 		//const canvas = document.getElementById("canvas-teste");
 		const context = canvas.getContext("2d");
@@ -108,8 +109,9 @@
 				lines.map(async (l) => await getCards(l, cameraState.filter)),
 			)
 		).flat();
-		console.log(options);
 		cameraState.currentListOfOptions = options;
+		if(options.length == 0)
+			cameraState.error = "Failed to find results, please try again"
 	}
 </script>
 
@@ -119,6 +121,7 @@
 		? "h-full grow flex flex-col relative p-4"
 		: "hidden "}
 >
+	{cameraState.error}
 	<video
 		bind:this={video}
 		autoplay
