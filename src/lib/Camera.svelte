@@ -110,6 +110,7 @@
 			)
 		).flat();
 		cameraState.currentListOfOptions = options;
+		cameraState.results = options
 		if(options.length == 0)
 			cameraState.error = "Failed to find results, please try again"
 	}
@@ -121,7 +122,6 @@
 		? "h-full grow flex flex-col relative p-4"
 		: "hidden "}
 >
-	{cameraState.error}
 	<video
 		bind:this={video}
 		autoplay
