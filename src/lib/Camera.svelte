@@ -103,16 +103,15 @@
 		const lines = text
 			.split("\n")
 			.map((s) => gibberish(keepOnlyCapsAndNumbers(s).trim()))
-			.filter((s) => s);		
+			.filter((s) => s);
 		const options = (
 			await Promise.all(
 				lines.map(async (l) => await getCards(l, cameraState.filter)),
 			)
 		).flat();
 		cameraState.currentListOfOptions = options;
-		cameraState.results = options
-		if(options.length == 0)
-			cameraState.error = "Failed to find results, please try again"
+		cameraState.results = options;
+		if (!options || options.length == 0) { cameraState.error = true }
 	}
 </script>
 
@@ -128,22 +127,20 @@
 		playsinline
 		class="w-auto object-cover grow h-full"
 	></video>
-	<div
-		bind:this={highlight}
-		class="absolute -translate-x-1/2 -translate-y-1/2 w-56 h-8 border-2 border-teal-800 left-1/2 top-1/4 rounded-md z-10"
-	></div>
+	<div bind:this={highlight} class="absolute top-0 left-0 w-full h-full z-10">
+		<div class="w-full border-b-2 border-slate-500 h-1/3"></div>
+	</div>
 	<button
-		class="absolute top-8 right-8 bg-red-400 p-1 rounded-md"
+		class="absolute z-50 top-8 right-8 bg-red-400 p-1 rounded-md"
 		onclick={stopCamera}
 	>
 		<Xmark />
 	</button>
-	<button
-		onclick={capture}
-		type="button"
-		class=" absolute bottom-12 justify-center w-4/5 -translate-x-1/2 left-1/2 inline-flex items-center rounded-md bg-indigo-600 px-8 py-3 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
-	>
-		Scan
-	</button>
-	<img src={image} />
+		<button
+			onclick={capture}
+			type="button"
+			class="z-50 absolute bottom-12 justify-center w-4/5 -translate-x-1/2 left-1/2 inline-flex items-center rounded-md bg-indigo-600 px-8 py-3 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+		>
+			Start
+		</button>
 </div>

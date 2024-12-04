@@ -1,4 +1,5 @@
 <script>
+    import Alert from "./lib/Alert.svelte";
   import Camera from "./lib/Camera.svelte";
   import EmptyState from "./lib/EmptyState.svelte";
     import Filter from "./lib/Filter.svelte";
@@ -19,10 +20,11 @@
   <div class="min-h-full flex-col flex justify-start">
     <Navbar />
     <div
-      class={`h-full items-center grow flex flex-col ${ Object.entries(cameraState.exported).length == 0 || cameraState.isActive ? "justify-center" : "justify-start p-2"}`}
+      class={`h-full relative items-center grow flex flex-col ${ Object.entries(cameraState.exported).length == 0 || cameraState.isActive ? "justify-center" : "justify-start p-2"}`}
     >
-	{cameraState.error}
-	{cameraState.results}
+      {#if cameraState.error }
+      <Alert />
+      {/if}
       <Camera bind:this={camera} />
       {#if !cameraState.isActive}
         {#if Object.entries(cameraState.exported).length == 0}
