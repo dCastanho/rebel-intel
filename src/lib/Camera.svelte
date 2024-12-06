@@ -199,6 +199,7 @@
 
 	export async function capture() {
 		cameraState.error = undefined;
+		console.time("Capturing")
 		//const canvas = document.createElement("canvas");
 		//const canvas = document.getElementById("canvas-teste");
 		const context = canvas.getContext("2d");
@@ -245,7 +246,6 @@
 		
 		//const cropped = cropToText(canvas);             
 
-		console.log(sectionX, sectionY, sectionHeight, sectionWidth, canvas.height, canvas.width, videoHeight, videoWidth)
 		// Draw the highlighted section from the video onto the canvas
 		context.drawImage(
 			video,
@@ -259,11 +259,17 @@
 			canvas.height,
 		);
 		//context.drawImage(video, 0, 0, canvas.width, canvas.height);
-
+		console.timeEnd("Capturing")
+		console.time("Preprocessing")
 		preprocessImage(canvas);
+		console.timeEnd("Preprocessing")
 
+		
 		image = canvas.toDataURL("image/png");
+		console.time("OCR")
 		const text = await recognize(image);
+		console.timeEnd("OCR")
+		console.time("Getting")
 		const lines = text
 			.split("\n")
 			.map((s) => gibberish(keepOnlyCapsAndNumbers(s).trim()))
@@ -273,6 +279,7 @@
 				lines.map(async (l) => await getCards(l, cameraState.filter)),
 			)
 		).flat();
+		console.timeEnd("Getting")
 		cameraState.currentListOfOptions = options;
 		cameraState.results = options;
 		if (!options || options.length == 0) {
