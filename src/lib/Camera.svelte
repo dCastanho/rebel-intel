@@ -261,7 +261,7 @@
 		//context.drawImage(video, 0, 0, canvas.width, canvas.height);
 
 		preprocessImage(canvas);
-		
+
 		image = canvas.toDataURL("image/png");
 		const text = await recognize(image);
 		const lines = text
@@ -287,7 +287,7 @@
 		? "h-full grow flex flex-col relative p-4"
 		: "hidden "}
 >
-	<canvas class="absolute top-0 right-0 z-50" bind:this={canvas}></canvas>
+	<canvas class="absolute top-0 right-0 z-50 w-screen" bind:this={canvas}></canvas>
 	<div class="relative">
 		<video
 			bind:this={video}
