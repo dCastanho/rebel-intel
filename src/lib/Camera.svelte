@@ -207,56 +207,62 @@
 		const videoHeight = video.videoHeight;
 
 		//! Highlight
-		// const videoContainerRect = videoContainer.getBoundingClientRect();
-		// const scaleX = videoWidth / videoContainerRect.width;
-		// const scaleY = videoHeight / videoContainerRect.height;
-		// const highlightRect = highlight.getBoundingClientRect();
-		// const sectionX =
-		// 	(highlightRect.left - videoContainerRect.left) * scaleX;
-		// const sectionY = (highlightRect.top - videoContainerRect.top) * scaleY;
-		// const sectionWidth = highlightRect.width * scaleX;
-		// const sectionHeight = highlightRect.height * scaleY;
+		const videoContainerRect = videoContainer.getBoundingClientRect();
+		const scaleX = videoWidth / videoContainerRect.width;
+		const scaleY = videoHeight / videoContainerRect.height;
+		const highlightRect = highlight.getBoundingClientRect();
+		const sectionX =
+			(highlightRect.left - videoContainerRect.left) * scaleX;
+		const sectionY = (highlightRect.top - videoContainerRect.top) * scaleY;
+		const sectionWidth = highlightRect.width * scaleX;
+		const sectionHeight = highlightRect.height * scaleY;
 
-		const sourceX = 0;
-		const sourceY = 0; // Start at the top
-		const sourceWidth = videoWidth;
-		const sourceHeight = videoHeight / 3; // Only the top half
+		canvas.width = sectionWidth
+		canvas.height = sectionHeight
+
+		// const sourceX = 0;
+		// const sourceY = 0; // Start at the top
+		// const sourceWidth = videoWidth;
+		// const sourceHeight = videoHeight / 3; // Only the top half
 
 		// Adjust the canvas size to match the source dimensions
-		canvas.width = sourceWidth;
-		canvas.height = sourceHeight;
+		// canvas.width = sourceWidth;
+		// canvas.height = sourceHeight;
 
 		// Draw the top half of the video frame onto the canvas at native resolution
-		context.drawImage(
-			video,
-			sourceX,
-			sourceY,
-			sourceWidth,
-			sourceHeight, // Source rectangle
-			0,
-			0,
-			sourceWidth,
-			sourceHeight, // Destination rectangle matches source
-		);
-
-		preprocessImage(canvas);
-		const cropped = cropToText(canvas);
-
-		// Draw the highlighted section from the video onto the canvas
 		// context.drawImage(
 		// 	video,
-		// 	sectionX,
-		// 	sectionY,
-		// 	sectionWidth,
-		// 	sectionHeight,
+		// 	sourceX,
+		// 	sourceY,
+		// 	sourceWidth,
+		// 	sourceHeight, // Source rectangle
 		// 	0,
 		// 	0,
-		// 	canvas.width,
-		// 	canvas.height,
+		// 	sourceWidth,
+		// 	sourceHeight, // Destination rectangle matches source
 		// );
+
+		
+		//const cropped = cropToText(canvas);             
+
+		console.log(sectionX, sectionY, sectionHeight, sectionWidth, canvas.height, canvas.width, videoHeight, videoWidth)
+		// Draw the highlighted section from the video onto the canvas
+		context.drawImage(
+			video,
+			sectionX,
+			sectionY,
+			sectionWidth,
+			sectionHeight,
+			0,
+			0,
+			canvas.width,
+			canvas.height,
+		);
 		//context.drawImage(video, 0, 0, canvas.width, canvas.height);
 
-		image = cropped.toDataURL("image/png");
+		preprocessImage(canvas);
+		
+		image = canvas.toDataURL("image/png");
 		const text = await recognize(image);
 		const lines = text
 			.split("\n")
@@ -281,16 +287,19 @@
 		? "h-full grow flex flex-col relative p-4"
 		: "hidden "}
 >
-	<canvas bind:this={canvas}></canvas>
-	<video
-		bind:this={video}
-		autoplay
-		playsinline
-		class="w-auto object-cover grow h-full"
-	></video>
-	<div bind:this={highlight} class="absolute top-0 left-0 w-full h-full z-10">
-		<div class="w-full border-b-2 border-slate-500 h-1/3"></div>
+	<canvas class="absolute top-0 right-0 z-50" bind:this={canvas}></canvas>
+	<div class="relative">
+		<video
+			bind:this={video}
+			autoplay
+			playsinline
+			class="w-auto object-cover grow h-full relative"
+		>
+	</video>
+	<div bind:this={highlight} class="absolute -translate-x-1/2 -translate-y-1/2 w-64 h-16 border-2 border-teal-800 left-1/2 top-1/4 rounded-md z-10">		
 	</div>
+	</div>
+	
 	<button
 		class="absolute z-50 top-8 right-8 bg-red-400 p-1 rounded-md"
 		onclick={stopCamera}
