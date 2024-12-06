@@ -6,11 +6,10 @@ import { cameraState } from '../lib/state.svelte';
 // Create the Fuse index
 const cardIndex = Fuse.createIndex([], cards)
 const fuse = new Fuse(cards, {keys: [], includeScore:true}, cardIndex)
+let worker = await createWorker('eng');
 
 export async function recognize(dataURL: string) {
-	const worker = await createWorker('eng');
 	const ret = await worker.recognize(dataURL);
-	worker.terminate();
 	return ret.data.text;
 	;
 }
