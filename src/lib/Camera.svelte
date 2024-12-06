@@ -13,6 +13,7 @@
 	let video = $state();
 	let image = $state("");
 	let img = $state();
+	let canvas = $state();
 
 	export async function startCamera() {
 		try {
@@ -20,7 +21,7 @@
 				video: {
 					width: { ideal: 999999 }, // Request a width of 1920 pixels (Full HD)
 					height: { ideal: 999999 }, // Request a height of 1080 pixels (Full HD)
-					facingMode: { exact: "environment" },
+					facingMode: { ideal: "environment" },
 				},
 			});
 			video.srcObject = stream;
@@ -41,10 +42,75 @@
 			video.srcObject = null; // Clears the video source
 		}
 	}
+	function cropToText(canvas, context) {
+    const width = canvas.width;
+    const height = canvas.height;
+    const imageData = context.getImageData(0, 0, width, height);
+    const data = imageData.data;
+
+    let minX = width, maxX = 0, minY = height, maxY = 0;
+
+    // Find the bounding box of non-white pixels
+    for (let y = 0; y < height; y++) {
+        for (let x = 0; x < width; x++) {
+            const index = (y * width + x) * 4;
+            const r = data[index], g = data[index + 1], b = data[index + 2];
+            if (r < 255 || g < 255 || b < 255) { // Non-white pixel
+                if (x < minX) minX = x;
+                if (x > maxX) maxX = x;
+                if (y < minY) minY = y;
+                if (y > maxY) maxY = y;
+            }
+        }
+    }
+
+    // Define cropping dimensions
+    const cropWidth = maxX - minX + 1;
+    const cropHeight = maxY - minY + 1;
+
+    // Create a new canvas for the cropped image
+    const croppedCanvas = document.createElement('canvas');
+    croppedCanvas.width = cropWidth;
+    croppedCanvas.height = cropHeight;
+    const croppedContext = croppedCanvas.getContext('2d');
+
+    // Draw the cropped region onto the new canvas
+    croppedContext.drawImage(canvas, minX, minY, cropWidth, cropHeight, 0, 0, cropWidth, cropHeight);
+
+    return croppedCanvas;
+}
+
+
+	function preprocessImage(canvas) {
+		// Load image into canvas
+		const width = canvas.width;
+		const height = canvas.height;
+		const context = canvas.getContext("2d");
+		const imageData = context.getImageData(0, 0, width, height);
+		const data = imageData.data;
+
+		// Convert to grayscale
+		for (let i = 0; i < data.length; i += 4) {
+			const gray =
+				0.299 * data[i] + 0.587 * data[i + 1] + 0.114 * data[i + 2];
+			data[i] = data[i + 1] = data[i + 2] = gray; // Set R, G, B to gray
+		}
+		context.putImageData(imageData, 0, 0);
+
+		for (let i = 0; i < data.length; i += 4) {
+			const gray = data[i]; // Grayscale value
+			const threshold = 140 // Simple threshold value
+			const binary = gray > threshold ? 255 : 0;
+			data[i] = data[i + 1] = data[i + 2] = binary; // Black or white
+		}
+		context.putImageData(imageData, 0, 0);
+
+		return canvas;
+	}
 
 	export async function capture() {
-		cameraState.error = undefined
-		const canvas = document.createElement("canvas");
+		cameraState.error = undefined;
+		//const canvas = document.createElement("canvas");
 		//const canvas = document.getElementById("canvas-teste");
 		const context = canvas.getContext("2d");
 
@@ -84,6 +150,9 @@
 			sourceHeight, // Destination rectangle matches source
 		);
 
+		preprocessImage(canvas);
+		const cropped = cropToText(canvas);
+
 		// Draw the highlighted section from the video onto the canvas
 		// context.drawImage(
 		// 	video,
@@ -98,7 +167,7 @@
 		// );
 		//context.drawImage(video, 0, 0, canvas.width, canvas.height);
 
-		image = canvas.toDataURL("image/png");
+		image = cropped.toDataURL("image/png");
 		const text = await recognize(image);
 		const lines = text
 			.split("\n")
@@ -111,7 +180,9 @@
 		).flat();
 		cameraState.currentListOfOptions = options;
 		cameraState.results = options;
-		if (!options || options.length == 0) { cameraState.error = true }
+		if (!options || options.length == 0) {
+			cameraState.error = true;
+		}
 	}
 </script>
 
@@ -121,6 +192,7 @@
 		? "h-full grow flex flex-col relative p-4"
 		: "hidden "}
 >
+	<canvas bind:this={canvas}></canvas>
 	<video
 		bind:this={video}
 		autoplay
@@ -136,11 +208,11 @@
 	>
 		<Xmark />
 	</button>
-		<button
-			onclick={capture}
-			type="button"
-			class="z-50 absolute bottom-12 justify-center w-4/5 -translate-x-1/2 left-1/2 inline-flex items-center rounded-md bg-indigo-600 px-8 py-3 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
-		>
-			Start
-		</button>
+	<button
+		onclick={capture}
+		type="button"
+		class="z-50 absolute bottom-12 justify-center w-4/5 -translate-x-1/2 left-1/2 inline-flex items-center rounded-md bg-indigo-600 px-8 py-3 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+	>
+		Start
+	</button>
 </div>
