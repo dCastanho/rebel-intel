@@ -205,43 +205,33 @@
 		const videoHeight = video.videoHeight;
 
 		//! Highlight
-		// const videoContainerRect = videoContainer.getBoundingClientRect();
-		// const scaleX = videoWidth / videoContainerRect.width;
-		// const scaleY = videoHeight / videoContainerRect.height;
-		// const ratio =  videoContainerRect.width / videoContainerRect.height 
-		// const highlightRect = highlight.getBoundingClientRect();
-		// const sectionX =
-		// 	(highlightRect.left - videoContainerRect.left) * scaleX;
-		// const sectionY = (highlightRect.top - videoContainerRect.top) * scaleY;
-		// const sectionWidth = highlightRect.width 
-		// const sectionHeight = highlightRect.height
+		const videoContainerRect = videoContainer.getBoundingClientRect();
+		const scaleX = videoWidth / videoContainerRect.width;
+		const scaleY = videoHeight / videoContainerRect.height;
+		const ratio =  videoContainerRect.width / videoContainerRect.height 
+		const highlightRect = highlight.getBoundingClientRect();
+		const sectionX =
+			(highlightRect.left - videoContainerRect.left) * scaleX;
+		const sectionY = (highlightRect.top - videoContainerRect.top) * scaleY;
+		const sectionWidth = highlightRect.width 
+		const sectionHeight = highlightRect.height
 
-		// console.log(highlightRect.left,highlightRect.top, sectionHeight, sectionWidth) 
+		console.log(highlightRect.left,highlightRect.top, sectionHeight, sectionWidth) 
 
-		// canvas.width = sectionWidth
-		// canvas.height = sectionHeight
-		// // Draw the highlighted section from the video onto the canvas
-		// context.drawImage(
-		// 	video,
-		// 	sectionX,
-		// 	sectionY,
-		// 	sectionWidth,
-		// 	sectionHeight,
-		// 	0,
-		// 	0,
-		// 	sectionWidth,
-		// 	sectionHeight,
-		// );
-		const sourceX = 0;
-		const sourceY = 0; // Start at the top
-		const sourceWidth = videoWidth;
-		const sourceHeight = videoHeight; // Only the top half
-
-		// Adjust the canvas size to match the source dimensions
-		canvas.width = sourceWidth;
-		canvas.height = sourceHeight;
-
-		context.drawImage(video, 0, 0, canvas.width, canvas.height);
+		canvas.width = sectionWidth
+		canvas.height = sectionHeight
+		// Draw the highlighted section from the video onto the canvas
+		context.drawImage(
+			video,
+			sectionX,
+			sectionY,
+			sectionWidth,
+			sectionHeight,
+			0,
+			0,
+			sectionWidth,
+			sectionHeight,
+		);
 
 		console.timeEnd("Capturing")
 		console.time("Preprocessing")
@@ -278,7 +268,7 @@
 		? "h-full grow flex flex-col relative p-4"
 		: "hidden "}
 >
-	<canvas class="absolute hidden top-0 right-0 z-50 w-screen" bind:this={canvas}></canvas>
+	<canvas class="absolute top-0 right-0 z-50 w-screen" bind:this={canvas}></canvas>
 	<div class="relative">
 		<video
 			bind:this={video}
