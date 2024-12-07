@@ -282,7 +282,7 @@
 	</div>
 
 	<button
-		class="absolute z-50 top-8 right-8 bg-red-400 p-1 rounded-md"
+		class="absolute z-10 top-8 right-8 bg-red-400 p-1 rounded-md"
 		onclick={stopCamera}
 	>
 		<Xmark />
