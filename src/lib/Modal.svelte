@@ -13,6 +13,8 @@
 		}
  	}
 
+	const allLoaded = $derived( cameraState.currentListOfOptions.every( opt =>  opt.loaded))
+
 	function cancel() {
 		cameraState.currentListOfOptions = []
 	}
@@ -57,8 +59,8 @@
 		>
 		<div class="w-full flex flex-row flex-wrap">
 			{#each cameraState.currentListOfOptions as option}
-			<button onclick={() => push(option)} class="w-1/2 p-1">
-				<img src={option.card}   />
+			<button onclick={() => allLoaded ? push(option) : undefined} class="w-1/2 p-1">
+				<img src={option.card} onload={() => option.loaded = true }   />
 			</button>
 			{/each}
 			

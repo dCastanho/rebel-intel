@@ -13,7 +13,6 @@ createWorker('eng').then( w => worker = w);
 export async function recognize(dataURL: string) {
 	const ret = await worker.recognize(dataURL);
 	return ret.data.text;
-	;
 }
 
 export function gibberish(title : string ) {
@@ -44,11 +43,12 @@ export async function getCards(title: string, filter: string) {
 			else //@ts-ignore
 				return d.map(c => { console.log(c); return { 
 					name: c.attributes.title, 
-					card: c.attributes.artFront.data.attributes.formats.card.url,
+					card: c.attributes.artFront.data.attributes.formats.xsmall.url,
 					set : c.attributes.expansion.data.attributes.code,
 					number : c.attributes.cardNumber,
 					foil: c.attributes.hasFoil,
-					hyperspace: c.attributes.hyperspace 
+					hyperspace: c.attributes.hyperspace,
+					loaded : false
 				}}).filter( c => filterCard(c, filter) )
 		})
 
