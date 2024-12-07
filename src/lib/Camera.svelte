@@ -43,59 +43,56 @@
 		}
 	}
 
-
 	function adaptiveThreshold(grayscale, width, height, blockSize, c) {
-    const halfBlockSize = Math.floor(blockSize / 2);
-    const result = new Uint8Array(grayscale.length);
+		const halfBlockSize = Math.floor(blockSize / 2);
+		const result = new Uint8Array(grayscale.length);
 
-    // Integral image for fast local sum computation
-    const integral = new Uint32Array((width + 1) * (height + 1));
+		// Integral image for fast local sum computation
+		const integral = new Uint32Array((width + 1) * (height + 1));
 
-    // Compute integral image
-    for (let y = 0; y < height; y++) {
-        for (let x = 0; x < width; x++) {
-            const index = y * width + x;
-            const gray = grayscale[index];
-            const integralIndex = (y + 1) * (width + 1) + (x + 1);
-            integral[integralIndex] =
-                gray +
-                integral[integralIndex - 1] +
-                integral[integralIndex - (width + 1)] -
-                integral[integralIndex - (width + 2)];
-        }
-    }
+		// Compute integral image
+		for (let y = 0; y < height; y++) {
+			for (let x = 0; x < width; x++) {
+				const index = y * width + x;
+				const gray = grayscale[index];
+				const integralIndex = (y + 1) * (width + 1) + (x + 1);
+				integral[integralIndex] =
+					gray +
+					integral[integralIndex - 1] +
+					integral[integralIndex - (width + 1)] -
+					integral[integralIndex - (width + 2)];
+			}
+		}
 
-    // Perform thresholding using the integral image
-    for (let y = 0; y < height; y++) {
-        for (let x = 0; x < width; x++) {
-            const x1 = Math.max(0, x - halfBlockSize);
-            const x2 = Math.min(width - 1, x + halfBlockSize);
-            const y1 = Math.max(0, y - halfBlockSize);
-            const y2 = Math.min(height - 1, y + halfBlockSize);
+		// Perform thresholding using the integral image
+		for (let y = 0; y < height; y++) {
+			for (let x = 0; x < width; x++) {
+				const x1 = Math.max(0, x - halfBlockSize);
+				const x2 = Math.min(width - 1, x + halfBlockSize);
+				const y1 = Math.max(0, y - halfBlockSize);
+				const y2 = Math.min(height - 1, y + halfBlockSize);
 
-            const sum =
-                integral[(y2 + 1) * (width + 1) + (x2 + 1)] -
-                integral[(y1) * (width + 1) + (x2 + 1)] -
-                integral[(y2 + 1) * (width + 1) + (x1)] +
-                integral[(y1) * (width + 1) + (x1)];
+				const sum =
+					integral[(y2 + 1) * (width + 1) + (x2 + 1)] -
+					integral[y1 * (width + 1) + (x2 + 1)] -
+					integral[(y2 + 1) * (width + 1) + x1] +
+					integral[y1 * (width + 1) + x1];
 
-            const area = (x2 - x1 + 1) * (y2 - y1 + 1);
-            const mean = sum / area;
+				const area = (x2 - x1 + 1) * (y2 - y1 + 1);
+				const mean = sum / area;
 
-            const index = y * width + x;
-            result[index] = grayscale[index] <= mean - c ? 0 : 255; // Black or white
-        }
-    }
+				const index = y * width + x;
+				result[index] = grayscale[index] <= mean - c ? 0 : 255; // Black or white
+			}
+		}
 
-    return result;
-}
-
-
+		return result;
+	}
 
 	function cropToText(canvas) {
 		const width = canvas.width;
 		const height = canvas.height;
-		const context = canvas.getContext('2d')
+		const context = canvas.getContext("2d");
 		const imageData = context.getImageData(0, 0, width, height);
 		const data = imageData.data;
 
@@ -199,51 +196,51 @@
 
 	export async function capture() {
 		cameraState.error = undefined;
-		console.time("Capturing")
+		console.time("Capturing");
+		//const canvas = document.createElement('canvas')
 		const context = canvas.getContext("2d");
-		const videoWidth = video.videoWidth;
-		const videoHeight = video.videoHeight;
 
 		//! Highlight
-		const videoContainerRect = videoContainer.getBoundingClientRect();
-		const scaleX = videoWidth / videoContainerRect.width;
-		const scaleY = videoHeight / videoContainerRect.height;
-		const ratio =  videoContainerRect.width / videoContainerRect.height 
+		const videoRect = video.getBoundingClientRect();
 		const highlightRect = highlight.getBoundingClientRect();
-		const sectionX =
-			(highlightRect.left - videoContainerRect.left) * scaleX;
-		const sectionY = (highlightRect.top - videoContainerRect.top) * scaleY;
-		const sectionWidth = highlightRect.width 
-		const sectionHeight = highlightRect.height
 
-		console.log(highlightRect.left,highlightRect.top, sectionHeight, sectionWidth) 
+		// Calculate the relative position and size of the highlight on the video
+		const scaleX = video.videoWidth / videoRect.width;
+		const scaleY = video.videoHeight / videoRect.height;
 
-		canvas.width = sectionWidth
-		canvas.height = sectionHeight
-		// Draw the highlighted section from the video onto the canvas
+		const highlightX = (highlightRect.left -videoRect.left) * scaleX;
+		const highlightY = (highlightRect.top - videoRect.top) * scaleY;
+		const highlightWidth = highlightRect.width * scaleX ;
+		const highlightHeight = highlightRect.height * scaleY;
+
+		// Set the canvas dimensions to match the highlight section
+		canvas.width = highlightWidth 
+		canvas.height = highlightHeight;  
+
+		// Draw the highlighted section of the video onto the canvas
 		context.drawImage(
 			video,
-			sectionX,
-			sectionY,
-			sectionWidth,
-			sectionHeight,
+			highlightX,
+			highlightY,
+			highlightWidth,
+			highlightHeight, // Source from video
 			0,
 			0,
-			sectionWidth,
-			sectionHeight,
+			highlightWidth,
+			highlightHeight, // Draw onto canvas
 		);
 
-		console.timeEnd("Capturing")
-		console.time("Preprocessing")
+		console.timeEnd("Capturing");
+		console.time("Preprocessing");
 		// preprocessImage(canvas);
-		console.timeEnd("Preprocessing")
+		console.timeEnd("Preprocessing");
 
-		
 		image = canvas.toDataURL("image/png");
-		console.time("OCR")
+		img = canvas.toDataURL("image/png");
+		console.time("OCR");
 		const text = await recognize(image);
-		console.timeEnd("OCR")
-		console.time("Getting")
+		console.timeEnd("OCR");
+		console.time("Getting");
 		const lines = text
 			.split("\n")
 			.map((s) => gibberish(keepOnlyCapsAndNumbers(s).trim()))
@@ -253,7 +250,7 @@
 				lines.map(async (l) => await getCards(l, cameraState.filter)),
 			)
 		).flat();
-		console.timeEnd("Getting")
+		console.timeEnd("Getting");
 		cameraState.currentListOfOptions = options;
 		cameraState.results = options;
 		if (!options || options.length == 0) {
@@ -268,19 +265,21 @@
 		? "h-full grow flex flex-col relative p-4"
 		: "hidden "}
 >
-	<canvas class="absolute top-0 right-0 z-50 w-screen" bind:this={canvas}></canvas>
-	<div class="relative">
+	<canvas class="absolute top-0 right-0 z-50" bind:this={canvas} ></canvas>
+	<div class="relative grow flex flex-col">
 		<video
 			bind:this={video}
 			autoplay
 			playsinline
 			class="w-auto object-cover grow h-full relative"
 		>
-	</video>
-	<div bind:this={highlight} class="absolute -translate-x-1/2 -translate-y-1/2 w-64 h-16 border-2 border-teal-800 left-1/2 top-1/4 rounded-md z-10">		
+		</video>
+		<div
+			bind:this={highlight}
+			class="absolute -translate-x-1/2 w-[264px] h-[64px] border-2 border-teal-800 left-1/2 top-1/4 rounded-md z-10"
+		></div>
 	</div>
-	</div>
-	
+
 	<button
 		class="absolute z-50 top-8 right-8 bg-red-400 p-1 rounded-md"
 		onclick={stopCamera}
