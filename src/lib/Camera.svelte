@@ -13,7 +13,6 @@
 	let video = $state();
 	let image = $state("");
 	let img = $state();
-	let canvas = $state();
 
 	export async function startCamera() {
 		try {
@@ -197,7 +196,7 @@
 	export async function capture() {
 		cameraState.error = undefined;
 		console.time("Capturing");
-		//const canvas = document.createElement('canvas')
+		const canvas = document.createElement('canvas')
 		const context = canvas.getContext("2d");
 
 		//! Highlight
@@ -216,6 +215,9 @@
 		// Set the canvas dimensions to match the highlight section
 		canvas.width = highlightWidth 
 		canvas.height = highlightHeight;  
+
+		// the image is slithtly wider than the box but im too tired 
+		// of it to try and understand why. Better wider than smaller
 
 		// Draw the highlighted section of the video onto the canvas
 		context.drawImage(
@@ -265,7 +267,6 @@
 		? "h-full grow flex flex-col relative p-4"
 		: "hidden "}
 >
-	<canvas class="absolute w-[60wv] top-0 right-12 z-20" bind:this={canvas} ></canvas>
 	<div class="relative grow flex flex-col">
 		<video
 			bind:this={video}
