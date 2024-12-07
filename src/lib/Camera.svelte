@@ -1,5 +1,6 @@
 <script>
-	import {
+	import { run } from "svelte/legacy";
+import {
 		getCards,
 		gibberish,
 		keepOnlyCapsAndNumbers,
@@ -11,8 +12,6 @@
 	let videoContainer = $state();
 	let highlight = $state();
 	let video = $state();
-	let image = $state("");
-	let img = $state();
 
 	export async function startCamera() {
 		try {
@@ -88,61 +87,6 @@
 		return result;
 	}
 
-	function cropToText(canvas) {
-		const width = canvas.width;
-		const height = canvas.height;
-		const context = canvas.getContext("2d");
-		const imageData = context.getImageData(0, 0, width, height);
-		const data = imageData.data;
-
-		let minX = width,
-			maxX = 0,
-			minY = height,
-			maxY = 0;
-
-		// Find the bounding box of non-white pixels
-		for (let y = 0; y < height; y++) {
-			for (let x = 0; x < width; x++) {
-				const index = (y * width + x) * 4;
-				const r = data[index],
-					g = data[index + 1],
-					b = data[index + 2];
-				if (r < 255 || g < 255 || b < 255) {
-					// Non-white pixel
-					if (x < minX) minX = x;
-					if (x > maxX) maxX = x;
-					if (y < minY) minY = y;
-					if (y > maxY) maxY = y;
-				}
-			}
-		}
-
-		// Define cropping dimensions
-		const cropWidth = maxX - minX + 1;
-		const cropHeight = maxY - minY + 1;
-
-		// Create a new canvas for the cropped image
-		const croppedCanvas = document.createElement("canvas");
-		croppedCanvas.width = cropWidth;
-		croppedCanvas.height = cropHeight;
-		const croppedContext = croppedCanvas.getContext("2d");
-
-		// Draw the cropped region onto the new canvas
-		croppedContext.drawImage(
-			canvas,
-			minX,
-			minY,
-			cropWidth,
-			cropHeight,
-			0,
-			0,
-			cropWidth,
-			cropHeight,
-		);
-
-		return croppedCanvas;
-	}
-
 	function preprocessImage(canvas) {
 		// Load image into canvas
 		const width = canvas.width;
@@ -193,9 +137,7 @@
 		return canvas;
 	}
 
-	export async function capture() {
-		cameraState.error = undefined;
-		console.time("Capturing");
+	function gettHighlightedArea() {
 		const canvas = document.createElement('canvas')
 		const context = canvas.getContext("2d");
 
@@ -232,31 +174,54 @@
 			highlightHeight, // Draw onto canvas
 		);
 
-		console.timeEnd("Capturing");
-		console.time("Preprocessing");
-		// preprocessImage(canvas);
-		console.timeEnd("Preprocessing");
+		return canvas
+	}
 
-		image = canvas.toDataURL("image/png");
-		img = canvas.toDataURL("image/png");
-		console.time("OCR");
-		const text = await recognize(image);
-		console.timeEnd("OCR");
-		console.time("Getting");
-		const lines = text
+
+
+	export async function capture() {
+		cameraState.running = true;
+		cameraState.error = undefined;
+
+		try{
+			
+			console.time("Cropping")
+			const canvas = gettHighlightedArea()
+			const image = canvas.toDataURL("image/png");
+			console.timeEnd("Cropping")
+				
+
+			console.time("Preprocessing")
+			preprocessImage(canvas)
+			console.timeEnd("Preprocessing")
+
+
+			console.time("OCR")
+			const text = await recognize(image);	
+			console.timeEnd("OCR")
+
+	
+			console.time("API Call")
+			const lines = text
 			.split("\n")
 			.map((s) => gibberish(keepOnlyCapsAndNumbers(s).trim()))
 			.filter((s) => s);
-		const options = (
-			await Promise.all(
-				lines.map(async (l) => await getCards(l, cameraState.filter)),
-			)
-		).flat();
-		console.timeEnd("Getting");
-		cameraState.currentListOfOptions = options;
-		cameraState.results = options;
-		if (!options || options.length == 0) {
-			cameraState.error = true;
+			
+			const options = (
+				await Promise.all(
+					lines.map(async (l) => await getCards(l, cameraState.filter)),
+				)).flat();
+			console.timeEnd("API Call")
+				
+			cameraState.currentListOfOptions = options;
+
+			if (!options || options.length == 0) {
+					cameraState.error = "No results"
+			}
+		} catch (error) {
+			cameraState.error = error
+		} finally {
+			cameraState.running = false 
 		}
 	}
 </script>
@@ -288,10 +253,19 @@
 		<Xmark />
 	</button>
 	<button
+		disabled={cameraState.running}
 		onclick={capture}
 		type="button"
-		class="z-50 absolute bottom-12 justify-center w-4/5 -translate-x-1/2 left-1/2 inline-flex items-center rounded-md bg-indigo-600 px-8 py-3 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+		class="z-10 absolute bottom-12 justify-center w-4/5 -translate-x-1/2 left-1/2 inline-flex items-center rounded-md bg-indigo-600 px-8 py-3 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
 	>
-		Start
+	{#if cameraState.running}
+		
+	<svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+		<circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+		<path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+	  </svg>
+	  {:else}
+	  Scan
+	  {/if}
 	</button>
 </div>
