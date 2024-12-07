@@ -265,7 +265,7 @@
 		? "h-full grow flex flex-col relative p-4"
 		: "hidden "}
 >
-	<canvas class="absolute top-0 right-0 z-50" bind:this={canvas} ></canvas>
+	<canvas class="absolute w-[60wv] top-0 right-12 z-20" bind:this={canvas} ></canvas>
 	<div class="relative grow flex flex-col">
 		<video
 			bind:this={video}
