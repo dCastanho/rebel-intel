@@ -3,7 +3,7 @@ import { svelte } from '@sveltejs/vite-plugin-svelte'
 
 // https://vite.dev/config/
 export default defineConfig({
-  base: "/viper-scanner/",
+  base: "/rebel-intel/",
   plugins: [svelte()],
   server: {
     host: '0.0.0.0', // Bind to all network interfaces
