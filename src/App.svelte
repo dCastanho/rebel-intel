@@ -22,7 +22,7 @@
     <div
       class={`h-full relative items-center grow flex flex-col ${ Object.entries(cameraState.exported).length == 0 || cameraState.isActive ? "justify-center" : "justify-start p-2"}`}
     >
-      {#if cameraState.error }
+      {#if cameraState.error && cameraState.error !== "" }
       <Alert />
       {/if}
       <Camera bind:this={camera} />
